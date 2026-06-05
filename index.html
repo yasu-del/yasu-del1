@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEON RAPTOR // Cyberpunk 3D FPS</title>
+    <meta name="description" content="ブラウザで手軽に遊べる爽快3D FPSゲーム。迫り来るネオンドローンを撃ち落とせ！">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- 3D Canvas -->
+        <canvas id="game-canvas"></canvas>
+
+        <!-- Red screen overlays for damage indications -->
+        <div id="damage-flash"></div>
+        <div id="low-health-warning"></div>
+
+        <!-- Head-Up Display (HUD) -->
+        <div id="hud-overlay">
+            <!-- Crosshair in center -->
+            <div id="crosshair">
+                <div class="dot"></div>
+            </div>
+
+            <!-- Top Left: Minimap -->
+            <div class="minimap-container">
+                <canvas id="minimap-canvas"></canvas>
+            </div>
+
+            <!-- Top Center: Score & Wave Info -->
+            <div class="game-info-container glass-panel">
+                <div class="info-item">
+                    <div class="info-title">SCORE</div>
+                    <div id="score-value" class="info-value">000,000</div>
+                </div>
+                <div class="info-item" style="border-left: 1px solid rgba(255, 255, 255, 0.1); padding-left: 20px;">
+                    <div class="info-title">WAVE</div>
+                    <div id="wave-value" class="info-value">01</div>
+                </div>
+            </div>
+
+            <!-- Top Right: Audio controller -->
+            <div id="sound-toggle" class="sound-toggle-btn interactive" title="BGM/効果音切り替え">
+                <!-- Sound Off Icon initially -->
+                <svg id="sound-icon-off" viewBox="0 0 24 24">
+                    <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.21.05-.42.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+                </svg>
+                <!-- Sound On Icon -->
+                <svg id="sound-icon-on" viewBox="0 0 24 24" style="display: none;">
+                    <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                </svg>
+            </div>
+
+            <!-- Bottom Left: Health & Shield bars -->
+            <div class="stats-container glass-panel">
+                <div class="stat-row">
+                    <div class="stat-label" id="label-shield">
+                        <span>SHIELD</span>
+                        <span id="shield-text" class="value">100/100</span>
+                    </div>
+                    <div class="bar-outer">
+                        <div id="bar-shield" class="bar-inner" style="width: 100%;"></div>
+                    </div>
+                </div>
+                <div class="stat-row">
+                    <div class="stat-label" id="label-hp">
+                        <span>INTEGRITY</span>
+                        <span id="hp-text" class="value">100/100</span>
+                    </div>
+                    <div class="bar-outer">
+                        <div id="bar-hp" class="bar-inner" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Right: Weapon & Ammo indicators -->
+            <div class="weapon-container glass-panel">
+                <div id="weapon-name" class="weapon-name">PHASER GUN</div>
+                <div class="ammo-display">
+                    <span id="ammo-clip">30</span><span style="color:#ffffff; margin:0 2px;">/</span><span id="ammo-reserve">INF</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Start Game Screen -->
+        <div id="start-screen" class="screen-overlay">
+            <div class="menu-box glass-panel">
+                <h1 class="glitch-title">NEON RAPTOR</h1>
+                <p class="subtitle">CYBERPUNK FPS</p>
+                <p class="description">
+                    サイバー空間へようこそ。敵ドローン部隊が接近中。グリッド防衛システムを起動し、迎撃せよ。<br>
+                    シールドは時間経過で回復しますが、機体耐久値（INTEGRITY）が0になるとシステムがシャットダウンします。
+                </p>
+                
+                <div class="instructions-grid">
+                    <div class="instruction-item">
+                        <div class="key-cap">WASD</div>
+                        <div class="action-label">移動</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="key-cap">MOUSE</div>
+                        <div class="action-label">視点移動</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="key-cap">L-CLICK</div>
+                        <div class="action-label">射撃 (レーザー)</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="key-cap">SPACE</div>
+                        <div class="action-label">ジャンプ</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="key-cap">R</div>
+                        <div class="action-label">リロード</div>
+                    </div>
+                    <div class="instruction-item">
+                        <div class="key-cap">ESC</div>
+                        <div class="action-label">ポーズ / 解除</div>
+                    </div>
+                </div>
+
+                <button id="start-btn" class="cyber-btn">CORE LINK SETUP</button>
+                <div class="loading-indicator">THREE.JS & SYNTH ENGINE STANDBY</div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="game-over-screen" class="screen-overlay" style="display: none; opacity: 0;">
+            <div class="menu-box glass-panel" style="border-color: var(--neon-magenta); box-shadow: 0 0 40px rgba(255, 0, 127, 0.2);">
+                <h1 class="glitch-title" style="color: var(--neon-magenta); text-shadow: 0 0 10px var(--neon-magenta);">CONNECTION LOST</h1>
+                <p class="subtitle" style="color: #ffffff;">SYSTEM CRITICAL DAMAGE</p>
+                
+                <div class="game-over-stats">
+                    <div class="game-over-stat">
+                        <span class="game-over-label">SCORE</span>
+                        <span id="final-score" class="game-over-value">000,000</span>
+                    </div>
+                    <div class="game-over-stat">
+                        <span class="game-over-label">WAVE REACHED</span>
+                        <span id="final-wave" class="game-over-value">01</span>
+                    </div>
+                </div>
+
+                <button id="restart-btn" class="cyber-btn" style="border-color: var(--neon-cyan); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2);">REBOOT SYSTEM</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- External Library Imports -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Game scripts (imported as module to allow structure) -->
+    <script type="module" src="src/game.js"></script>
+</body>
+</html>
