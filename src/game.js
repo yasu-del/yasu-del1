@@ -96,8 +96,10 @@ function init() {
     scene = new THREE.Scene();
     scene.fog = new THREE.FogExp2(0x05050a, 0.015);
 
-    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
-    renderer.setPixelRatio(window.devicePixelRatio);
+    // Performance optimization: Cap pixel ratio to reduce heavy rendering load on high-DPI displays
+    const pixelRatio = window.devicePixelRatio;
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: pixelRatio === 1 });
+    renderer.setPixelRatio(Math.min(pixelRatio, 1.25)); // Cap pixel ratio for smoother FPS
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
