@@ -311,7 +311,7 @@ export class PowerUp {
             this.group.add(mesh);
             this.group.add(ring);
         } else if (type === 'ammo') {
-            color = 0fffb00; // Neon Yellow (Ammo crate: double glowing cylinders/cubes)
+            color = 0xfffb00; // Neon Yellow (Ammo crate: double glowing cylinders/cubes)
             color = 0xfffb00;
             
             geometry = new THREE.BoxGeometry(0.6, 0.5, 0.6);
